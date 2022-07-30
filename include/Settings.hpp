@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include "boost/property_tree/ptree.hpp"
 
 class Settings {
     private:
