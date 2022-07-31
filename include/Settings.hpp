@@ -1,12 +1,18 @@
 #pragma once
 #include <string>
+#include <vector>
+#include "boost/json/src.hpp"
 
 class Settings {
-    private:
-        struct nft_settings;
     public:
         Settings (char* filepath);
+        boost::json::value file_read (char* filepath);
 
-        template <typename T>
-        T get (std::string setting_path);
+        std::string name;
+        std::string ind_name;
+        int num;
+        std::vector<std::string> layers;
+        std::vector<int> rarity_levels;
+        std::vector<std::string> check_above;
+        std::vector<std::string[4]> exceptions;
 };
