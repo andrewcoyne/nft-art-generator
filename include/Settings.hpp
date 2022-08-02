@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+// Data class that enables fast access to the settings in the provided JSON file
 class Settings {
     public:
         Settings (char* filepath);

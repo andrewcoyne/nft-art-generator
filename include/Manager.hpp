@@ -3,6 +3,7 @@
 #include <thread>
 #include "Settings.hpp"
 
+// Manages the creation and execution of program threads
 class Manager {
     private:
         // Array of threads for image generation
