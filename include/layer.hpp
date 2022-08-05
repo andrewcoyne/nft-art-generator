@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <memory>
 #include "Settings.hpp"
 #include "opencv2/core.hpp"
 
@@ -15,9 +14,9 @@ class Layer {
 
         cv::Mat img;
 
-        std::shared_ptr<Settings> settings;
+        Settings settings;
     public:
-        Layer (std::string layerType, std::shared_ptr<Settings> settings_ptr);
+        Layer (std::string layerType, Settings& settings_ref);
 
         // Check if this layer, given the layers above it, will be visible
         bool check_above (cv::Mat above_imgs []);

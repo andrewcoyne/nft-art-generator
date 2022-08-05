@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 #include <thread>
 #include "Settings.hpp"
 
@@ -11,8 +10,10 @@ class Manager {
 
         // Numbers of images to be created by each thread
         int* img_count;
+
+        Settings settings;
     public:
-        Manager (std::shared_ptr<Settings> settings);
+        Manager (Settings& settings_ref);
 
         // Initialize the "threads" and "img_count" arrays, then begin execution
         void init_threads (uint numPerThread, uint extraImg);

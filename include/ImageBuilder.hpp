@@ -12,7 +12,7 @@ class ImageBuilder {
         int nfts_to_gen;
         std::shared_ptr<int> nft_count;
         std::shared_ptr<DuplicateChecker> dc;
-        std::shared_ptr<Settings> settings;
+        Settings settings;
 
         // Remove layers if they can't be seen
         void prune_invis_layers (std::vector<Layer>& layers);
@@ -20,7 +20,7 @@ class ImageBuilder {
         // Take a Layer vector and return a corresponding array of their ids
         std::string* to_id_arr (std::vector<Layer>& layers);
     public:
-        ImageBuilder (int to_gen, std::shared_ptr<int> nft_count_ptr, std::shared_ptr<DuplicateChecker> dc_ptr, std::shared_ptr<Settings> settings_ptr);
+        ImageBuilder (int to_gen, std::shared_ptr<int> nft_count_ptr, std::shared_ptr<DuplicateChecker> dc_ptr, Settings& settings_ref);
 
         void generate ();
 };
