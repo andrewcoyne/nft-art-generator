@@ -31,6 +31,8 @@ class Settings {
         // special ordering cases
         std::vector<std::vector<std::string>> layer_exceptions;
     public:
+        Settings ();
+        
         Settings (char* filepath);
 
         // Access JSON file, initialize settings variables
