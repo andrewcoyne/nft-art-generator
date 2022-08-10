@@ -23,7 +23,7 @@ int main (int argc, char* argv[]) {
     // Get remainder, to be distributed evenly among available threads
     uint32_t extraImg = settings.get_num_nft() % std::thread::hardware_concurrency();
     
-    Manager m (settings);
+    Manager m (std::ref(settings));
     m.init_threads(numPerThread, extraImg);
 
     return 0;
