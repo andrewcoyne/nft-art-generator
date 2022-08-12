@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 #include <string>
 #include <vector>
 #include "Settings.hpp"
@@ -17,10 +16,10 @@ class ImageBuilder {
         Logger logger;
 
         // Remove layers if they can't be seen
-        void prune_invis_layers (std::vector<Layer>& layers);
+        void remove_invis_layers (std::vector<Layer>& layers);
 
-        // Take a Layer vector and return a corresponding array of their ids
-        std::string* to_id_arr (std::vector<Layer>& layers);
+        // Take a Layer vector and return a corresponding vector of their ids
+        std::vector<std::string> to_id_vec (std::vector<Layer>& layers);
     public:
         ImageBuilder ();
 
