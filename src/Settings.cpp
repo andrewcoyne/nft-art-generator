@@ -17,13 +17,29 @@ void Settings::init () {
 
     // Load variables from JSON file
     name = settings["name"].get<std::string>();
+    if (name.length() == 0) { throw std::runtime_error("Name was not provided."); }
+
     ind_name = settings["ind_name"].get<std::string>();
+    if (ind_name.length() == 0) { throw std::runtime_error("Individual name was not provided."); }
+    
     num_nft = settings["num"].get<int>();
+    if (num_nft == NULL) { throw std::runtime_error("Number of NFTs to generate was not provided."); }
+    
     layer_folder_names = settings["layers"].get<std::vector<std::string>>();
+    if (layer_folder_names.size() == 0) { throw std::runtime_error("Layer folder names (\"layers\") were not provided."); }
+    
     rarity_level_names = settings["rarity_level_names"].get<std::vector<std::string>>();
+    if (rarity_level_names.size() == 0) { throw std::runtime_error("Rarity level names were not provided."); }
+    
     rarity_level_pct = settings["rarity_levels"].get<std::vector<double>>();
+    if (rarity_level_pct.size() == 0) { throw std::runtime_error("Rarity level percentages (\"rarity_levels\") were not provided."); }
+    
     check_above = settings["check_above"].get<std::vector<std::string>>();
+    if (check_above.size() == 0) { throw std::runtime_error("Layers to check (\"check_above\") were not provided."); }
+    
     layer_exceptions = settings["exceptions"].get<std::vector<std::vector<std::string>>>();
+    if (layer_exceptions.size() == 0) { throw std::runtime_error("Layer exceptions (primary array) were not provided."); }
+    if (layer_exceptions.at(0).size() == 0) { throw std::runtime_error("Layer exceptions (secondary array) were not provided."); }
 }
 
 std::string Settings::get_name () { return name; }

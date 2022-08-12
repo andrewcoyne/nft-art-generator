@@ -13,8 +13,8 @@ int main (int argc, char* argv[]) {
     Settings settings (argv[1]);
     try {
         settings.init();
-    } catch (...) {
-        std::cerr << "Error: Settings file could not be read." << std::endl;
+    } catch (std::runtime_error& e) {
+        std::cerr << "Error: Settings file could not be processed - " << e.what() << std::endl;
         return 1;
     }
 
