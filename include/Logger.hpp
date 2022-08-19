@@ -14,7 +14,7 @@ class Logger {
         Settings settings;
 
         // The name of the file containing the traits of all NFTs in collection
-        std::ofstream traits_file;
+        std::string traits_fname;
     public:
         Logger ();
 

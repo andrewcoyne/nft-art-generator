@@ -10,9 +10,8 @@ Logger::Logger () {}
 Logger::Logger (Settings& settings_ref) {
     settings = settings_ref;
 
-    // create & open file in constructor for efficiency
     std::time_t time = std::time(nullptr);
-    traits_file.open(settings.get_name() + "_Traits_" + std::ctime(&time) + ".txt", std::ios::app | std::ios::ate | std::ios::out);
+    traits_fname = settings.get_name() + "_Traits_" + std::ctime(&time) + ".txt";
 }
 
 // Prevent concurrent modification of trait_count or traits_file
@@ -20,6 +19,8 @@ std::mutex log_nft_mutex;
 
 void Logger::log_nft (std::vector<std::string>& traits, int nft_count) {
     log_nft_mutex.lock();
+
+    std::ofstream traits_file (traits_fname, std::ios::app | std::ios::ate | std::ios::out);
 
     std::string init_out = settings.get_ind_name() + " #" + std::to_string(nft_count) + ": ";
 
