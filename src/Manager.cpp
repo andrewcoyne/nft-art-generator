@@ -24,7 +24,7 @@ void Manager::init_threads (uint32_t numPerThread, uint32_t extraImg) {
         }
 
         ImageBuilder ib (img_to_gen, std::ref(nft_count), std::ref(dc), std::ref(settings), std::ref(logger));
-        std::thread gen_thread (&ImageBuilder::generate, ib);
+        std::thread gen_thread (&ImageBuilder::generate, std::ref(ib));
         threads.push_back(gen_thread);
     }
 
