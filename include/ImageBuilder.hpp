@@ -19,11 +19,12 @@ class ImageBuilder {
         void remove_invis_layers (std::vector<Layer>& layers);
 
         // Take a Layer vector and return a corresponding vector of their ids
-        std::vector<std::string> to_id_vec (std::vector<Layer>& layers);
+        std::vector<std::string>& to_id_vec (std::vector<Layer>& layers);
     public:
         ImageBuilder ();
 
         ImageBuilder (int to_gen, int& nft_count_ref, DuplicateChecker& dc_ref, Settings& settings_ref, Logger& logger_ref);
 
+        // Generate [nfts_to_gen] images
         void generate ();
 };
