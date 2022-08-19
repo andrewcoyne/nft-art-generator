@@ -84,7 +84,8 @@ void ImageBuilder::generate () {
         // If the generated image is unique, save and log it
         std::vector<std::string> traits = to_id_vec(layers);
         if (!dc.search(traits)) {
-            cv::imwrite(settings.get_ind_name() + std::to_string(nft_count) + ".png", img);
+            std::string filepath = std::filesystem::current_path().string() + "/finished_images/" + settings.get_ind_name() + std::to_string(nft_count) + ".png";
+            cv::imwrite(filepath, img);
             logger.log_nft(traits, nft_count);
             ++i;
         }
