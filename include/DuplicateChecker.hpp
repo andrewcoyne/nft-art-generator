@@ -13,8 +13,9 @@ class DuplicateChecker {
         // Insert provided image layer combination into trie
         void insert (std::vector<std::string>& traits);
 
-        // Returns true if t1 precedes t2 in an ordered vector
-        bool compare (std::shared_ptr<TrieNode> t1, std::string t2);
+        bool binary_search (std::vector<std::shared_ptr<TrieNode> >& children, std::string key);
+
+        int lower_bound (std::vector<std::shared_ptr<TrieNode> >& children, std::string key);
 
         std::shared_ptr<TrieNode> root;
     public:
