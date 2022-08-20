@@ -25,11 +25,13 @@ void Manager::init_threads (uint32_t numPerThread, uint32_t extraImg) {
 
         ImageBuilder ib (img_to_gen, std::ref(nft_count), std::ref(dc), std::ref(settings), std::ref(logger));
         std::thread gen_thread (&ImageBuilder::generate, std::ref(ib));
-        threads.push_back(gen_thread);
+        threads.push_back(std::move(gen_thread));
     }
 
     // wait for the threads to finish
-    for (int i = 0; i < thread_count; ++i) {
-        threads.at(i).join();
+    for (std::thread& th : threads) {
+        if (th.joinable()) {
+            th.join();
+        }
     }
 }
