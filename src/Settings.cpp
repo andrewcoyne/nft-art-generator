@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include "Settings.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 
 // Class that provides easy access to the settings in the JSON file
 Settings::Settings () {}

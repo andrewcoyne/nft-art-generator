@@ -29,7 +29,7 @@ class Settings {
         std::vector<std::string> check_above;
 
         // special ordering cases
-        std::vector<std::vector<std::string>> layer_exceptions;
+        std::vector<std::vector<std::string> > layer_exceptions;
     public:
         Settings ();
         
@@ -62,5 +62,5 @@ class Settings {
         std::vector<std::string> get_check_above ();
 
         // Get special ordering cases
-        std::vector<std::vector<std::string>> get_layer_exceptions ();
+        std::vector<std::vector<std::string> > get_layer_exceptions ();
 };
