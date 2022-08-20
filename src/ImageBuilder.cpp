@@ -11,7 +11,7 @@ ImageBuilder::ImageBuilder (int to_gen, int& nft_count_ref, DuplicateChecker& dc
     logger = logger_ref;
 }
 
-std::vector<std::string>& ImageBuilder::to_id_vec (std::vector<Layer>& layers) {
+std::vector<std::string> ImageBuilder::to_id_vec (std::vector<Layer>& layers) {
     std::vector<std::string> res;
     for (Layer& i : layers) { res.push_back(i.get_id()); }
     return res;
