@@ -7,22 +7,22 @@
 
 Logger::Logger () {}
 
-Logger::Logger (Settings& settings_ref) {
-    settings = settings_ref;
+Logger::Logger (std::shared_ptr<Settings> settings_ptr) {
+    settings = settings_ptr;
 
     std::time_t time = std::time(nullptr);
-    traits_fname = settings.get_name() + "_Traits_" + std::ctime(&time) + ".txt";
+    traits_fname = settings->get_name() + "_Traits_" + std::ctime(&time) + ".txt";
 }
 
 // Prevent concurrent modification of trait_count or traits_file
 std::mutex log_nft_mutex;
 
-void Logger::log_nft (std::vector<std::string>& traits, int nft_count) {
+void Logger::log_nft (std::vector<std::string>& traits, std::shared_ptr<int> nft_count) {
     log_nft_mutex.lock();
 
     std::ofstream traits_file (traits_fname, std::ios::app | std::ios::ate | std::ios::out);
 
-    std::string init_out = settings.get_ind_name() + " #" + std::to_string(nft_count) + ": ";
+    std::string init_out = settings->get_ind_name() + " #" + std::to_string(*nft_count) + ": ";
 
     // write to CLI
     std::cout << init_out << std::endl;
@@ -54,7 +54,7 @@ void Logger::log_nft (std::vector<std::string>& traits, int nft_count) {
 
 void Logger::log_trait_count () {
     std::time_t time = std::time(nullptr);
-    std::ofstream trait_count_file (settings.get_name() + "_Trait_Count_" + std::ctime(&time) + ".txt", std::ios::app | std::ios::ate | std::ios::out);
+    std::ofstream trait_count_file (settings->get_name() + "_Trait_Count_" + std::ctime(&time) + ".txt", std::ios::app | std::ios::ate | std::ios::out);
 
     for (auto i: trait_count) {
         trait_count_file << i.first + ": " + std::to_string(i.second) << std::endl;

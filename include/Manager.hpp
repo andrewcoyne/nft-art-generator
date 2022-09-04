@@ -9,9 +9,9 @@ class Manager {
         // Array of threads for image generation
         std::vector<std::thread> threads;
 
-        Settings settings;
+        std::shared_ptr<Settings> settings;
     public:
-        Manager (Settings& settings_ref);
+        Manager (std::shared_ptr<Settings> settings_ptr);
 
         // Initialize the "threads" and "img_count" arrays, then begin execution
         void init_threads (uint32_t numPerThread, uint32_t extraImg);

@@ -6,7 +6,7 @@
 // Representation of a layer within an NFT image
 class Layer {
     private:
-        Settings settings;
+        std::shared_ptr<Settings> settings;
 
         std::string layer_type;
 
@@ -20,14 +20,14 @@ class Layer {
     public:
         Layer ();
 
-        Layer (std::string layer_type_, Settings& settings_ref);
+        Layer (std::string layer_type_, std::shared_ptr<Settings> settings_ptr);
 
         // Randomly select the specific layer based on settings and layer type
         void select_layer ();
 
         // Returns the OpenCV representation (cv::Mat) of this layer
         // Prevents accidental modification of the cv::Mat object
-        cv::Mat get_layer ();
+        cv::Mat& get_layer ();
 
         std::string get_id ();
 };

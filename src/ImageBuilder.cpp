@@ -1,14 +1,15 @@
+#include <iostream>
 #include "ImageBuilder.hpp"
 #include "opencv2/imgcodecs.hpp"
 
 ImageBuilder::ImageBuilder () {}
 
-ImageBuilder::ImageBuilder (int to_gen, int& nft_count_ref, DuplicateChecker& dc_ref, Settings& settings_ref, Logger& logger_ref) {
+ImageBuilder::ImageBuilder (int to_gen, std::shared_ptr<int> nft_count_ptr, std::shared_ptr<DuplicateChecker> dc_ptr, std::shared_ptr<Settings> settings_ptr, std::shared_ptr<Logger> logger_ptr) {
     nfts_to_gen = to_gen;
-    nft_count = nft_count_ref;
-    dc = dc_ref;
-    settings = settings_ref;
-    logger = logger_ref;
+    nft_count = nft_count_ptr;
+    dc = dc_ptr;
+    settings = settings_ptr;
+    logger = logger_ptr;
 }
 
 std::vector<std::string> ImageBuilder::to_id_vec (std::vector<Layer>& layers) {
@@ -19,7 +20,7 @@ std::vector<std::string> ImageBuilder::to_id_vec (std::vector<Layer>& layers) {
 
 void ImageBuilder::remove_invis_layers (std::vector<Layer>& layers) {
     cv::Mat above;
-    std::vector<std::string> layers_to_check = settings.get_check_above();
+    std::vector<std::string> layers_to_check = settings->get_check_above();
 
     for (auto it = layers.rbegin(); it != layers.rend(); ) {
         // obtain this layer's alpha channel for comparison
@@ -46,7 +47,8 @@ void ImageBuilder::remove_invis_layers (std::vector<Layer>& layers) {
 
             // if less than 1% of the layer is visible beneath the layers above it, remove it
             if (cv::countNonZero(result) / (double) cv::countNonZero(alpha) < 0.01) {
-                it = decltype(it)(layers.erase((++it).base()));
+                std::cout << "remove layer" << std::endl;
+                it = decltype(it)(layers.erase(std::next(it).base()));
                 continue;
             }
         }
@@ -63,30 +65,30 @@ void ImageBuilder::generate () {
         cv::Mat img;
 
         // Generate layers and add them to layer vector
-        for (std::string& layer_type : settings.get_layer_folder_names()) {
+        for (std::string& layer_type : settings->get_layer_folder_names()) {
             Layer l (layer_type, settings);
             l.select_layer();
-            layers.push_back(l);
+            layers.push_back(std::ref(l));
         }
-
+        //std::cout << "before " << layers.size() << std::endl;
         remove_invis_layers(layers);
-
+        //std::cout << "after " << layers.size() << std::endl;
         // Construct image
         // This is done before checking for uniqueness, because not doing so allows for the
         // increased possibility that an identical image is generated and logged in the meantime
-        img = layers[0].get_layer();
+        img = layers.at(0).get_layer();
         for (int j = 1; j < layers.size(); ++j) {
-            cv::Mat layer_to_add = layers[j].get_layer();
+            cv::Mat layer_to_add = layers.at(j).get_layer();
             cv::Rect roi (cv::Point (0, 0), layer_to_add.size());
             layer_to_add.copyTo(img (roi));
         }
 
         // If the generated image is unique, save and log it
         std::vector<std::string> traits = to_id_vec(layers);
-        if (!dc.search(traits)) {
-            std::string filepath = std::filesystem::current_path().string() + "/finished_images/" + settings.get_ind_name() + std::to_string(nft_count) + ".png";
+        if (!dc->search(traits)) {
+            std::string filepath = std::filesystem::current_path().string() + "/finished_images/" + settings->get_ind_name() + std::to_string(*nft_count) + ".png";
             cv::imwrite(filepath, img);
-            logger.log_nft(traits, nft_count);
+            logger->log_nft(traits, nft_count);
             ++i;
         }
     }
