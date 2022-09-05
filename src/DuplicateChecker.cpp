@@ -12,6 +12,7 @@ struct DuplicateChecker::TrieNode {
 };
 
 bool DuplicateChecker::binary_search (std::vector<std::shared_ptr<TrieNode> >& children, std::string key) {
+    if (children.size() == 0) { return false; }
     int lo = 0, hi = children.size() - 1;
     int mid;
 
@@ -31,7 +32,7 @@ int DuplicateChecker::lower_bound (std::vector<std::shared_ptr<TrieNode> >& chil
     int a = 0, c = children.size();
  
     while (c > 0) {
-        int b = a + (c / 2);
+        int b = (a + c) / 2;
         if (children[b]->val.compare(key) < 0) {
             a = ++b;
             c -= b + 1;
@@ -84,6 +85,7 @@ bool DuplicateChecker::search (std::vector<std::string>& traits) {
         // see if the given trait (i) isn't in node->children
         if (!binary_search(node->children, i)) {
             insert(traits);
+            dc_mutex.unlock();
             return false;
         }
 
@@ -92,7 +94,6 @@ bool DuplicateChecker::search (std::vector<std::string>& traits) {
         node = node->children.at(pos_of_match);
     }
 
-    return node->is_end;
-
     dc_mutex.unlock();
+    return node->is_end;
 }
