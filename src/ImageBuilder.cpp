@@ -25,8 +25,16 @@ void ImageBuilder::remove_invis_layers (std::vector<Layer>& layers) {
     for (auto it = layers.rbegin(); it != layers.rend(); ) {
         // obtain this layer's alpha channel for comparison
         std::vector<cv::Mat> channels;
-        cv::split(it->get_layer(), channels);
-        cv::Mat alpha = channels[3];
+        cv::split(it->get_layer().clone(), channels);
+        cv::Mat alpha;
+
+        if (channels.size() >= 4){
+            alpha = channels[3];
+        } else {
+            std::cerr << "WARNING: Layer " + it->get_id() + " does not have an alpha channel" << std::endl;
+            ++it;
+            continue;
+        }
 
         // if there are no layers above this layer, make above = the layer's alpha channel
         if (above.empty()) {
@@ -47,7 +55,7 @@ void ImageBuilder::remove_invis_layers (std::vector<Layer>& layers) {
 
             // if less than 1% of the layer is visible beneath the layers above it, remove it
             if (cv::countNonZero(result) / (double) cv::countNonZero(alpha) < 0.01) {
-                std::cout << "remove layer" << std::endl;
+                //std::cout << "remove layer" << std::endl;
                 it = decltype(it)(layers.erase(std::next(it).base()));
                 continue;
             }
@@ -70,25 +78,39 @@ void ImageBuilder::generate () {
             l.select_layer();
             layers.push_back(std::ref(l));
         }
-        //std::cout << "before " << layers.size() << std::endl;
+        
         remove_invis_layers(layers);
-        //std::cout << "after " << layers.size() << std::endl;
+        
         // Construct image
         // This is done before checking for uniqueness, because not doing so allows for the
         // increased possibility that an identical image is generated and logged in the meantime
         img = layers.at(0).get_layer();
         for (int j = 1; j < layers.size(); ++j) {
             cv::Mat layer_to_add = layers.at(j).get_layer();
-            cv::Rect roi (cv::Point (0, 0), layer_to_add.size());
-            layer_to_add.copyTo(img (roi));
+
+            // Add layer_to_add on top of img
+            uint8_t* img_pixel = (uint8_t*) img.data;
+            uint8_t* layer_pixel = (uint8_t*) layer_to_add.data;
+            int channels = img.channels();
+            for (int k = 0; k < img.rows; ++k) {
+                for (int l = 0; l < img.cols; ++l) {
+                    int index = k * img.cols * channels + l * channels;
+                    double alpha = layer_pixel[index + 3] / 255;
+                    img_pixel[index] = img_pixel[index] * (1 - alpha) + layer_pixel[index] * alpha; // Modify B channel value
+                    img_pixel[index + 1] = img_pixel[index + 1] * (1 - alpha) + layer_pixel[index + 1] * alpha; // Modify G channel value
+                    img_pixel[index + 2] = img_pixel[index + 2] * (1 - alpha) + layer_pixel[index + 2] * alpha; // Modify R channel value
+                }
+            }
         }
 
         // If the generated image is unique, save and log it
         std::vector<std::string> traits = to_id_vec(layers);
         if (!dc->search(traits)) {
-            std::string filepath = std::filesystem::current_path().string() + "/finished_images/" + settings->get_ind_name() + std::to_string(*nft_count) + ".png";
+            (*nft_count)++;
+            int curr_nft_count = *nft_count;
+            std::string filepath = std::filesystem::current_path().string() + "/finished_images/" + settings->get_ind_name() + std::to_string(curr_nft_count) + ".png";
             cv::imwrite(filepath, img);
-            logger->log_nft(traits, nft_count);
+            logger->log_nft(traits, curr_nft_count);
             ++i;
         }
     }
