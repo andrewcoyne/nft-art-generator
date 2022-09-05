@@ -27,7 +27,7 @@ class Layer {
 
         // Returns the OpenCV representation (cv::Mat) of this layer
         // Prevents accidental modification of the cv::Mat object
-        cv::Mat& get_layer ();
+        cv::Mat get_layer ();
 
         std::string get_id ();
 };

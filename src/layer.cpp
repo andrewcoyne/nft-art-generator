@@ -1,5 +1,6 @@
 #include <random>
 #include <filesystem>
+#include <iostream>
 #include "Layer.hpp"
 #include "opencv2/imgcodecs.hpp"
 
@@ -49,13 +50,14 @@ void Layer::select_layer () {
         std::string img_file = files_in_dir.at(dist_file_select(rng));
 
         // use layer_type, folder, and img_file to initialize filepath, id, and img
-        filepath = /*folder + "/" +*/ img_file;
-        id = layer_type + "_" + img_file.substr(/*0*/img_file.find_last_of('/'), img_file.find('.'));
+        filepath = img_file;
+        //std::cout << filepath << std::endl;
+        id = layer_type + "_" + img_file.substr(img_file.find_last_of('/') + 1, img_file.find_last_of('.'));
         // read image file with cv::IMREAD_UNCHANGED to preserve alpha channel
         img = cv::imread(filepath, cv::IMREAD_UNCHANGED);
     }
 }
 
-cv::Mat& Layer::get_layer () { return img; }
+cv::Mat Layer::get_layer () { return img; }
 
 std::string Layer::get_id () { return id; }
