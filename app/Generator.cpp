@@ -20,6 +20,7 @@ int main (int argc, char* argv[]) {
     std::cout << "Loaded settings file." << std::endl;
 
     // if there's a space in the filename, change it to an underscore
+    // if it's a .DS_Store file, delete it
     for (std::filesystem::recursive_directory_iterator i("."), end; i != end; ++i) { 
         if (!is_directory(i->path())) {
             if (i->path().filename().string().find(" ") != std::string::npos) {
@@ -29,6 +30,10 @@ int main (int argc, char* argv[]) {
                 new_path = old_path.substr(0, old_path.find_last_of('/')) + "/" + new_path;
                 std::filesystem::rename(i->path(), new_path);
                 std::cout << "Renamed " << new_path << std::endl;
+            }
+            if (i->path().filename().string().find(".DS_Store") != std::string::npos) {
+                std::filesystem::remove(i->path());
+                std::cout << "Deleted .DS_Store file" << std::endl;
             }
         }
     }
