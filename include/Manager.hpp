@@ -1,6 +1,7 @@
 #pragma once
 #include <thread>
 #include <vector>
+#include <memory>
 #include "Settings.hpp"
 
 // Manages the creation and execution of program threads

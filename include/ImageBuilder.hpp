@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <filesystem>
 #include "Settings.hpp"
 #include "Layer.hpp"
 #include "Logger.hpp"

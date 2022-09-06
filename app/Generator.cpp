@@ -1,6 +1,8 @@
 #include <iostream>
 #include <filesystem>
 #include <thread>
+#include <string>
+#include <algorithm>
 #include "Manager.hpp"
 #include "Settings.hpp"
 
