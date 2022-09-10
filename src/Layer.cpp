@@ -1,5 +1,4 @@
 #include <random>
-#include <filesystem>
 #include <iostream>
 #include "Layer.hpp"
 #include "opencv2/imgcodecs.hpp"
@@ -33,31 +32,52 @@ void Layer::select_layer () {
     // randomly select the actual layer file
     // for further optimization, add reservoir sampling for very large folders?
     std::string folder = std::filesystem::current_path().string() + "/" + layer_type + "/" + rarity_folder_name;
-    std::vector<std::string> files_in_dir;
+    std::vector<std::filesystem::path> files_in_dir;
+
+    // check if the folder exists - if not, make this a blank layer
+    if (!std::filesystem::exists(folder)) {
+        set_blank_layer();
+        return;
+    }
+
+    // Put all the paths of the files in the folder into files_in_dir
     for (const auto& entry : std::filesystem::directory_iterator(folder)) {
         files_in_dir.push_back(entry.path());
     }
-
-    // If there aren't any files in the chosen folder, restart the layer selection process
-    bool restarted = false;
-    if (files_in_dir.size() == 0) { 
-        select_layer(); 
-        restarted = true;
-    }
-
-    if (!restarted) {
+    
+    // If there are files in the chosen folder, pick one and make that the layer
+    // If not, make this a blank layer
+    if (files_in_dir.size() != 0) {
         std::uniform_int_distribution<int> dist_file_select (0, files_in_dir.size() - 1);
-        std::string img_file = files_in_dir.at(dist_file_select(rng));
-
+    
         // use layer_type, folder, and img_file to initialize filepath, id, and img
-        filepath = img_file;
-        //std::cout << filepath << std::endl;
-        id = layer_type + "_" + img_file.substr(img_file.find_last_of('/') + 1, img_file.find_last_of('.'));
+        filepath = files_in_dir.at(dist_file_select(rng));
+
+        // If there's an image file BLANK.png, just make this a blank layer
+        if (filepath.stem().string() == "BLANK") {
+            set_blank_layer();
+            return;
+        }
+
+        id = layer_type + "_" + filepath.stem().string();
+
         // read image file with cv::IMREAD_UNCHANGED to preserve alpha channel
         img = cv::imread(filepath, cv::IMREAD_UNCHANGED);
+    } else {
+        set_blank_layer();
     }
+    
+}
+
+void Layer::set_blank_layer () {
+    id = layer_type + "_" + "BLANK";
+    isBlank = true;
 }
 
 cv::Mat Layer::get_layer () { return img; }
 
 std::string Layer::get_id () { return id; }
+
+std::string Layer::get_layer_type () { return layer_type; }
+
+bool Layer::get_blank () { return isBlank; }

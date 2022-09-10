@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <filesystem>
 #include "Settings.hpp"
 #include "opencv2/core.hpp"
 
@@ -14,7 +15,9 @@ class Layer {
         // layer type + "_" + (filename - extension)
         std::string id;
 
-        std::string filepath;
+        bool isBlank;
+
+        std::filesystem::path filepath;
 
         cv::Mat img;
     public:
@@ -25,9 +28,17 @@ class Layer {
         // Randomly select the specific layer based on settings and layer type
         void select_layer ();
 
+        // Make this layer a blank layer
+        void set_blank_layer ();
+
         // Returns the OpenCV representation (cv::Mat) of this layer
         // Prevents accidental modification of the cv::Mat object
         cv::Mat get_layer ();
 
         std::string get_id ();
+
+        std::string get_layer_type ();
+
+        // Returns true if this is a blank layer, false otherwise
+        bool get_blank ();
 };
