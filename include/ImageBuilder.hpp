@@ -19,6 +19,12 @@ class ImageBuilder {
         // Remove layers if they can't be seen
         void remove_invis_layers (std::vector<Layer>& layers);
 
+        // Move the layer to a different location within the vector
+        void move_layer (std::vector<Layer>& layers, size_t curr_index, size_t new_index);
+
+        // Rearrange layers according to user-provided layer exceptions
+        void handle_layer_exc (std::vector<Layer>& layers);
+
         // Take a Layer vector and return a corresponding vector of their ids
         std::vector<std::string> to_id_vec (std::vector<Layer>& layers);
     public:

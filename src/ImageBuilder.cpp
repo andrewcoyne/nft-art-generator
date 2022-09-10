@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include "ImageBuilder.hpp"
 #include "opencv2/imgcodecs.hpp"
 
@@ -45,7 +46,7 @@ void ImageBuilder::remove_invis_layers (std::vector<Layer>& layers) {
 
         // if this layer's type req's it to be checked, check the layer
         std::string layer_id = it->get_id();
-        std::string layer_type = layer_id.substr(0, layer_id.find("_"));
+        std::string layer_type = it->get_layer_type();
         if (std::any_of(layers_to_check.begin(), layers_to_check.end(), [layer_type](std::string s){ return s == layer_type; })) {
             // if a pixel in the current layer is visible, and no pixels are visible above it
             cv::Mat inv_above;
@@ -67,6 +68,60 @@ void ImageBuilder::remove_invis_layers (std::vector<Layer>& layers) {
     }
 }
 
+void ImageBuilder::move_layer (std::vector<Layer>& layers, size_t curr_index, size_t new_index) {
+    if (curr_index > new_index) {
+        std::rotate(layers.rend() - curr_index - 1, layers.rend() - curr_index, layers.rend() - new_index);
+    } else {       
+        std::rotate(v.begin() + curr_index, layers.begin() + curr_index + 1, layers.begin() + new_index + 1);
+    }
+}
+
+void ImageBuilder::handle_layer_exc (std::vector<Layer>& layers) {
+    int current_layers_index = 0;
+    for (auto it = layers.begin(); it != layers.end(); ) {
+        for (auto& j : settings->get_layer_exceptions()) {
+            // If this is the layer to which the exception applies,
+            if (it->get_layer_type() == j.at(0) && it->get_id() == j.at(1)) {
+                // find the correct action to take
+                if (j.at(2) == "MoveBehind") {
+                    // Find the layer specified by the exception, and move this layer behind it
+                    for (int k = 0; k < layers.size(); ++k) {
+                        if (layers.at(k).get_layer_type() == j.at(3)) {
+                            move_layer(layers, current_layers_index, k);
+                            // Reset the main iterator; it's not guaranteed to remain valid after move
+                            it = layers.begin();
+                            current_layers_index = 0;
+                            break;
+                        }
+                    }
+                } 
+                else if (j.at(2) == "MoveInFront") {
+                    // Find the layer specified by the exception, and move this layer in front of it
+                    for (int k = 0; k < layers.size(); ++k) {
+                        if (layers.at(k).get_layer_type() == j.at(3)) {
+                            move_layer(layers, current_layers_index, k + 1);
+                            // Reset the main iterator; it's not guaranteed to remain valid after move
+                            it = layers.begin();
+                            current_layers_index = 0;
+                            break;
+                        }
+                    }
+                } 
+                else if (j.at(2) == "DeleteIf") {
+                    // If the layer specified by the exception is in layers, delete this layer
+                    for (int k = 0; k < layers.size(); ++k) {
+                        if (layers.at(k).get_layer_type() == j.at(3) && layers.at(k).get_id() == j.at(4)) {
+                            it = decltype(it)(layers.erase(std::next(it).base()));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        ++current_layers_index;
+    }
+}
+
 void ImageBuilder::generate () {
     for (int i = 0; i < nfts_to_gen; ) {
         std::vector<Layer> layers;
@@ -76,9 +131,13 @@ void ImageBuilder::generate () {
         for (std::string& layer_type : settings->get_layer_folder_names()) {
             Layer l (layer_type, settings);
             l.select_layer();
-            layers.push_back(std::ref(l));
+            if (!l.get_blank()) {
+                layers.push_back(std::ref(l));
+            }
         }
         
+        handle_layer_exc(layers);
+
         remove_invis_layers(layers);
         
         // Construct image
