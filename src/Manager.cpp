@@ -18,13 +18,14 @@ void Manager::init_threads (uint32_t numPerThread, uint32_t extraImg) {
     // generate threads
     for (int i = 0; i < thread_count; ++i) {
         int img_to_gen = numPerThread;
+
         if (extraImg > 0) {
             ++img_to_gen;
             --extraImg;
         }
-
-        ImageBuilder ib (img_to_gen, nft_count, dc, settings, logger);
-        std::thread gen_thread (&ImageBuilder::generate, std::ref(ib));
+        
+        ImageBuilder *ib  = new ImageBuilder(img_to_gen, nft_count, dc, settings, logger);
+        std::thread gen_thread (&ImageBuilder::generate, ib);
         threads.push_back(std::move(gen_thread));
     }
 

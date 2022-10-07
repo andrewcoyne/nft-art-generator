@@ -63,6 +63,8 @@ void Layer::select_layer () {
 
         // read image file with cv::IMREAD_UNCHANGED to preserve alpha channel
         img = cv::imread(filepath, cv::IMREAD_UNCHANGED);
+
+        isBlank = false;
     } else {
         set_blank_layer();
     }
@@ -70,7 +72,7 @@ void Layer::select_layer () {
 }
 
 void Layer::set_blank_layer () {
-    id = layer_type + "_" + "BLANK";
+    id = layer_type + "_BLANK";
     isBlank = true;
 }
 
