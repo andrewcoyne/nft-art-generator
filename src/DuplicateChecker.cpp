@@ -1,4 +1,5 @@
 #include <mutex>
+#include <iostream>
 #include "DuplicateChecker.hpp"
 
 DuplicateChecker::DuplicateChecker () {
@@ -11,38 +12,58 @@ struct DuplicateChecker::TrieNode {
     std::vector<std::shared_ptr<DuplicateChecker::TrieNode>> children;
 };
 
+/*
 bool DuplicateChecker::binary_search (std::vector<std::shared_ptr<TrieNode> >& children, std::string key) {
-    if (children.size() == 0) { return false; }
-    int lo = 0, hi = children.size() - 1;
-    int mid;
-
-    while (hi - lo > 1) {
-        int mid = (hi + lo) / 2;
-        if (children[mid]->val.compare(key) < 0) {
-            lo = mid + 1;
-        }
-        else {
-            hi = mid;
+    for (auto& i : children) {
+        if (i->val == key) {
+            return true;
         }
     }
-    return children[lo]->val.compare(key) == 0 || children[hi]->val.compare(key) == 0;
-}
 
-int DuplicateChecker::lower_bound (std::vector<std::shared_ptr<TrieNode> >& children, std::string key) {
-    int a = 0, c = children.size();
- 
-    while (c > 0) {
-        int b = (a + c) / 2;
-        if (children[b]->val.compare(key) < 0) {
-            a = ++b;
-            c -= b + 1;
+    return false;
+}
+*/
+
+bool DuplicateChecker::binary_search (std::vector<std::shared_ptr<TrieNode> >& children, std::string key) {
+    if (children.size() == 0) { return false; }
+    int a = 0, b, c = children.size() - 1;
+
+    while (a < c) {
+        int b = (c + a) / 2;
+
+        if (children[b]->val == key) {
+            return true;
+        } else if (children[b]->val < key) {
+            a = b + 1;
         }
         else {
             c = b;
         }
     }
-    return a;
+    return children[a]->val == key || children[c]->val == key;
 }
+
+
+
+int DuplicateChecker::lower_bound (std::vector<std::shared_ptr<TrieNode> >& children, std::string key) {
+    int a = 0, b, c = children.size();
+ 
+    while (a < c) {
+        b = a + (c - a) / 2;
+
+        if (children[b]->val == key) {
+            return b;
+        } else if (children[b]->val < key) {
+            a = b + 1;
+        }
+        else {
+            c = b;
+        }
+    }
+
+    return a < children.size() - 1 ? a : children.size() - 1;
+}
+
 
 // Prevent concurrent modification issues with the trie
 std::mutex dc_mutex;
@@ -66,6 +87,7 @@ void DuplicateChecker::insert (std::vector<std::string>& traits) {
         // If the given trait isn't in node->children, add it
         auto new_node = std::make_shared<DuplicateChecker::TrieNode>();
         new_node->val = i;
+        new_node->is_end = false;
         node->children.insert(node->children.begin() + pos_to_insert, new_node);
 
         node = node->children.at(pos_to_insert);
