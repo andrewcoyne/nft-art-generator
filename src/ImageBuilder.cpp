@@ -71,26 +71,69 @@ void ImageBuilder::remove_invis_layers (std::vector<Layer>& layers) {
 void ImageBuilder::move_layer (std::vector<Layer>& layers, size_t curr_index, size_t new_index) {
     if (curr_index > new_index) {
         std::rotate(layers.rend() - curr_index - 1, layers.rend() - curr_index, layers.rend() - new_index);
-    } else {       
-        std::rotate(v.begin() + curr_index, layers.begin() + curr_index + 1, layers.begin() + new_index + 1);
+    } else if (new_index < layers.size()) {      
+        std::rotate(layers.begin() + curr_index, layers.begin() + curr_index, layers.begin() + new_index);
     }
 }
 
 void ImageBuilder::handle_layer_exc (std::vector<Layer>& layers) {
+    
+    std::vector<std::vector<std::string>> exc = settings->get_layer_exceptions();
+
+    for (int i = 0; i < layers.size(); ++i) {
+        for (int j = 0; j < exc.size(); ++j) {
+            if (layers.at(i).get_id() == exc.at(j).at(0) + "_" + exc.at(j).at(1)) {
+                if (exc.at(j).at(2) == "MoveBehind") {
+                    // Find the layer specified by the exception, and move this layer behind it
+                    for (int k = 0; k < layers.size(); ++k) {
+                        if (layers.at(k).get_layer_type() == exc.at(j).at(3)) {
+                            std::cout << "MoveBehind" << std::endl;
+                            move_layer(layers, i, k);
+                            break;
+                        }
+                    }
+                } 
+                else if (exc.at(j).at(2) == "MoveInFront") {
+                    // Find the layer specified by the exception, and move this layer in front of it
+                    for (int k = 0; k < layers.size(); ++k) {
+                        if (layers.at(k).get_layer_type() == exc.at(j).at(3)) {
+                            std::cout << "MoveInFront" << std::endl;
+                            move_layer(layers, i, k + 1);
+                            break;
+                        }
+                    }
+                } 
+                else if (exc.at(j).at(2) == "DeleteIf") {
+                    // If the layer specified by the exception is in layers, delete this layer
+                    for (int k = 0; k < layers.size(); ++k) {
+                        if (layers.at(k).get_id() == exc.at(j).at(3) + "_" + exc.at(j).at(4)) {
+                            std::cout << "DeleteIf" << std::endl;
+                            layers.erase(layers.begin() + i);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+
+    /*
     int current_layers_index = 0;
     for (auto it = layers.begin(); it != layers.end(); ) {
         for (auto& j : settings->get_layer_exceptions()) {
             // If this is the layer to which the exception applies,
-            if (it->get_layer_type() == j.at(0) && it->get_id() == j.at(1)) {
+            if (it->get_id() == j.at(0) + "_" + j.at(1)) {
                 // find the correct action to take
                 if (j.at(2) == "MoveBehind") {
                     // Find the layer specified by the exception, and move this layer behind it
                     for (int k = 0; k < layers.size(); ++k) {
                         if (layers.at(k).get_layer_type() == j.at(3)) {
+                            std::cout << "MoveBehind" << std::endl;
                             move_layer(layers, current_layers_index, k);
                             // Reset the main iterator; it's not guaranteed to remain valid after move
-                            it = layers.begin();
-                            current_layers_index = 0;
+                            it = layers.begin() + k;
+                            //current_layers_index = 0;
                             break;
                         }
                     }
@@ -99,10 +142,11 @@ void ImageBuilder::handle_layer_exc (std::vector<Layer>& layers) {
                     // Find the layer specified by the exception, and move this layer in front of it
                     for (int k = 0; k < layers.size(); ++k) {
                         if (layers.at(k).get_layer_type() == j.at(3)) {
+                            std::cout << "MoveInFront" << std::endl;
                             move_layer(layers, current_layers_index, k + 1);
                             // Reset the main iterator; it's not guaranteed to remain valid after move
-                            it = layers.begin();
-                            current_layers_index = 0;
+                            it = layers.begin() + (k + 1);
+                            //current_layers_index = 0;
                             break;
                         }
                     }
@@ -110,16 +154,20 @@ void ImageBuilder::handle_layer_exc (std::vector<Layer>& layers) {
                 else if (j.at(2) == "DeleteIf") {
                     // If the layer specified by the exception is in layers, delete this layer
                     for (int k = 0; k < layers.size(); ++k) {
-                        if (layers.at(k).get_layer_type() == j.at(3) && layers.at(k).get_id() == j.at(4)) {
-                            it = decltype(it)(layers.erase(std::next(it).base()));
+                        if (layers.at(k).get_id() == j.at(3) + "_" + j.at(4)) {
+                            std::cout << "DeleteIf" << std::endl;
+                            it = layers.erase(it);
                             break;
                         }
                     }
                 }
             }
         }
+        //++it;
         ++current_layers_index;
     }
+    */
+    
 }
 
 void ImageBuilder::generate () {
@@ -135,10 +183,10 @@ void ImageBuilder::generate () {
                 layers.push_back(std::ref(l));
             }
         }
-        
-        handle_layer_exc(layers);
 
         remove_invis_layers(layers);
+        
+        handle_layer_exc(layers);
         
         // Construct image
         // This is done before checking for uniqueness, because not doing so allows for the
@@ -154,7 +202,7 @@ void ImageBuilder::generate () {
             for (int k = 0; k < img.rows; ++k) {
                 for (int l = 0; l < img.cols; ++l) {
                     int index = k * img.cols * channels + l * channels;
-                    double alpha = layer_pixel[index + 3] / 255;
+                    double alpha = layer_pixel[index + 3] / 255.0; // convert to value from 0.0-1.0
                     img_pixel[index] = img_pixel[index] * (1 - alpha) + layer_pixel[index] * alpha; // Modify B channel value
                     img_pixel[index + 1] = img_pixel[index + 1] * (1 - alpha) + layer_pixel[index + 1] * alpha; // Modify G channel value
                     img_pixel[index + 2] = img_pixel[index + 2] * (1 - alpha) + layer_pixel[index + 2] * alpha; // Modify R channel value
@@ -167,9 +215,9 @@ void ImageBuilder::generate () {
         if (!dc->search(traits)) {
             (*nft_count)++;
             int curr_nft_count = *nft_count;
+            logger->log_nft(traits, curr_nft_count);
             std::string filepath = std::filesystem::current_path().string() + "/finished_images/" + settings->get_ind_name() + std::to_string(curr_nft_count) + ".png";
             cv::imwrite(filepath, img);
-            logger->log_nft(traits, curr_nft_count);
             ++i;
         }
     }
