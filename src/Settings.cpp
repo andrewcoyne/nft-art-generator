@@ -22,8 +22,9 @@ void Settings::init () {
     ind_name = settings["ind_name"].get<std::string>();
     if (ind_name.length() == 0) { throw std::runtime_error("Individual name was not provided."); }
     
+    num_nft == -1;
     num_nft = settings["num"].get<int>();
-    if (num_nft == NULL) { throw std::runtime_error("Number of NFTs to generate was not provided."); }
+    if (num_nft == -1) { throw std::runtime_error("Number of NFTs to generate was not provided."); }
     
     layer_folder_names = settings["layers"].get<std::vector<std::string>>();
     if (layer_folder_names.size() == 0) { throw std::runtime_error("Layer folder names (\"layers\") were not provided."); }
