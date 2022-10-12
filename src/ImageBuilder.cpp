@@ -69,10 +69,12 @@ void ImageBuilder::remove_invis_layers (std::vector<Layer>& layers) {
 }
 
 void ImageBuilder::move_layer (std::vector<Layer>& layers, size_t curr_index, size_t new_index) {
+    new_index = std::min(new_index, layers.size() - 1);
+
     if (curr_index > new_index) {
         std::rotate(layers.rend() - curr_index - 1, layers.rend() - curr_index, layers.rend() - new_index);
-    } else if (new_index < layers.size()) {      
-        std::rotate(layers.begin() + curr_index, layers.begin() + curr_index, layers.begin() + new_index);
+    } else {      
+        std::rotate(layers.begin() + curr_index, layers.begin() + curr_index + 1, layers.begin() + new_index + 1);
     }
 }
 
@@ -87,7 +89,6 @@ void ImageBuilder::handle_layer_exc (std::vector<Layer>& layers) {
                     // Find the layer specified by the exception, and move this layer behind it
                     for (int k = 0; k < layers.size(); ++k) {
                         if (layers.at(k).get_layer_type() == exc.at(j).at(3)) {
-                            std::cout << "MoveBehind" << std::endl;
                             move_layer(layers, i, k);
                             break;
                         }
@@ -97,7 +98,6 @@ void ImageBuilder::handle_layer_exc (std::vector<Layer>& layers) {
                     // Find the layer specified by the exception, and move this layer in front of it
                     for (int k = 0; k < layers.size(); ++k) {
                         if (layers.at(k).get_layer_type() == exc.at(j).at(3)) {
-                            std::cout << "MoveInFront" << std::endl;
                             move_layer(layers, i, k + 1);
                             break;
                         }
@@ -107,7 +107,6 @@ void ImageBuilder::handle_layer_exc (std::vector<Layer>& layers) {
                     // If the layer specified by the exception is in layers, delete this layer
                     for (int k = 0; k < layers.size(); ++k) {
                         if (layers.at(k).get_id() == exc.at(j).at(3) + "_" + exc.at(j).at(4)) {
-                            std::cout << "DeleteIf" << std::endl;
                             layers.erase(layers.begin() + i);
                             break;
                         }
@@ -116,58 +115,6 @@ void ImageBuilder::handle_layer_exc (std::vector<Layer>& layers) {
             }
         }
     }
-    
-
-    /*
-    int current_layers_index = 0;
-    for (auto it = layers.begin(); it != layers.end(); ) {
-        for (auto& j : settings->get_layer_exceptions()) {
-            // If this is the layer to which the exception applies,
-            if (it->get_id() == j.at(0) + "_" + j.at(1)) {
-                // find the correct action to take
-                if (j.at(2) == "MoveBehind") {
-                    // Find the layer specified by the exception, and move this layer behind it
-                    for (int k = 0; k < layers.size(); ++k) {
-                        if (layers.at(k).get_layer_type() == j.at(3)) {
-                            std::cout << "MoveBehind" << std::endl;
-                            move_layer(layers, current_layers_index, k);
-                            // Reset the main iterator; it's not guaranteed to remain valid after move
-                            it = layers.begin() + k;
-                            //current_layers_index = 0;
-                            break;
-                        }
-                    }
-                } 
-                else if (j.at(2) == "MoveInFront") {
-                    // Find the layer specified by the exception, and move this layer in front of it
-                    for (int k = 0; k < layers.size(); ++k) {
-                        if (layers.at(k).get_layer_type() == j.at(3)) {
-                            std::cout << "MoveInFront" << std::endl;
-                            move_layer(layers, current_layers_index, k + 1);
-                            // Reset the main iterator; it's not guaranteed to remain valid after move
-                            it = layers.begin() + (k + 1);
-                            //current_layers_index = 0;
-                            break;
-                        }
-                    }
-                } 
-                else if (j.at(2) == "DeleteIf") {
-                    // If the layer specified by the exception is in layers, delete this layer
-                    for (int k = 0; k < layers.size(); ++k) {
-                        if (layers.at(k).get_id() == j.at(3) + "_" + j.at(4)) {
-                            std::cout << "DeleteIf" << std::endl;
-                            it = layers.erase(it);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        //++it;
-        ++current_layers_index;
-    }
-    */
-    
 }
 
 void ImageBuilder::generate () {
