@@ -2,23 +2,19 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 // Checks if a generated NFT has already been made
-// Implements a trie for efficient checking
 class DuplicateChecker {
     private:
-        // Trie implementation
-        struct TrieNode;
+        // Hash map for storing each NFT's details
+        std::unordered_map<std::string, int> trait_map;
 
-        // Insert provided image layer combination into trie
-        void insert (std::vector<std::string>& traits);
+        // Insert provided image layer combination into hash map
+        void insert (std::string& traits);
 
-        bool binary_search (std::vector<std::shared_ptr<TrieNode> >& children, std::string key);
-
-        int lower_bound (std::vector<std::shared_ptr<TrieNode> >& children, std::string key);
-
-        std::shared_ptr<TrieNode> root;
     public:
+
         DuplicateChecker ();
 
         /* Search for duplicate
